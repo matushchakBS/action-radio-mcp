@@ -51,21 +51,35 @@ export function createHttpTool<TInput = unknown, TOutput = unknown>(
         let response;
         const { method, path } = spec;
         
+        // Replace path parameters like {episode_id} with actual values from args
+        const input = args as Record<string, any>;
+        const processedPath = path.replace(/\{([^}]+)\}/g, (match, paramName) => {
+          const value = input[paramName];
+          if (value === undefined) {
+            throw new Error(`Missing required path parameter: ${paramName}`);
+          }
+          // Remove the parameter from the body for non-GET requests
+          if (method !== 'GET') {
+            delete input[paramName];
+          }
+          return String(value);
+        });
+        
         switch (method) {
           case 'GET':
-            response = await api.get(path);
+            response = await api.get(processedPath);
             break;
           case 'POST':
-            response = await api.post(path, args);
+            response = await api.post(processedPath, input);
             break;
           case 'PUT':
-            response = await api.put(path, args);
+            response = await api.put(processedPath, input);
             break;
           case 'DELETE':
-            response = await api.delete(path);
+            response = await api.delete(processedPath);
             break;
           case 'PATCH':
-            response = await api.patch(path, args);
+            response = await api.patch(processedPath, input);
             break;
           default:
             throw new Error(`Unsupported HTTP method: ${method}`);
