@@ -13,6 +13,8 @@ const tests = [
   { name: 'episodes', file: 'episodes.test.ts', description: 'Episode CRUD operations' },
   { name: 'tracks', file: 'tracks.test.ts', description: 'Track management' },
   { name: 'placements', file: 'placements.test.ts', description: 'Placement operations' },
+  { name: 'assets', file: 'assets.test.ts', description: 'Asset template management' },
+  { name: 'variants', file: 'variants.test.ts', description: 'Asset variant management' },
 ];
 
 async function runTest(testFile: string): Promise<boolean> {
