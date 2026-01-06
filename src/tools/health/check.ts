@@ -26,16 +26,16 @@ const spec = {
   method: 'GET' as const,
   path: '/health',
 
-  mapResponse: (data: any, ctx: { apiBaseUrl: string }): HealthOutput => ({
+  mapResponse: (data: any, ctx: { apiBaseUrl: string; url: string; method: string }): HealthOutput => ({
     status: 'healthy',
-    api_url: ctx.apiBaseUrl,
+    api_url: ctx.url,
     response: data,
     timestamp: new Date().toISOString(),
   }),
 
-  mapError: (err: unknown, ctx: { apiBaseUrl: string }): HealthOutput => ({
+  mapError: (err: unknown, ctx: { apiBaseUrl: string; url: string; method: string }): HealthOutput => ({
     status: 'unhealthy',
-    api_url: ctx.apiBaseUrl,
+    api_url: ctx.url,
     error: err instanceof Error ? err.message : 'Unknown error',
     timestamp: new Date().toISOString(),
   }),

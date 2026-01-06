@@ -14,8 +14,8 @@ export interface HttpToolSpec<TInput = unknown, TOutput = unknown> {
   inputSchema: { type: 'object'; properties?: Record<string, object>; required?: string[]; [key: string]: unknown };
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
   path: string;
-  mapResponse: (data: any, ctx: { apiBaseUrl: string; input: TInput }) => TOutput;
-  mapError?: (error: unknown, ctx: { apiBaseUrl: string; input: TInput }) => TOutput;
+  mapResponse: (data: any, ctx: { apiBaseUrl: string; input: TInput; url: string; method: string }) => TOutput;
+  mapError?: (error: unknown, ctx: { apiBaseUrl: string; input: TInput; url: string; method: string }) => TOutput;
   isError?: (output: TOutput) => boolean;
   successText?: string;
   errorText?: string;
@@ -45,8 +45,6 @@ export function createHttpTool<TInput = unknown, TOutput = unknown>(
     description: spec.description,
     inputSchema: spec.inputSchema,
     execute: async (args: unknown): Promise<CallToolResult> => {
-      const ctx = { apiBaseUrl, input: args as TInput };
-      
       try {
         let response;
         const { method, path } = spec;
@@ -65,6 +63,9 @@ export function createHttpTool<TInput = unknown, TOutput = unknown>(
           return String(value);
         });
         
+        // Construct the full URL for debugging
+        let fullUrl: string;
+        
         switch (method) {
           case 'GET':
             // For GET requests, handle query parameters
@@ -76,24 +77,31 @@ export function createHttpTool<TInput = unknown, TOutput = unknown>(
             });
             const queryString = queryParams.toString();
             const fullPath = queryString ? `${processedPath}?${queryString}` : processedPath;
+            fullUrl = `${apiBaseUrl}${fullPath}`;
             response = await api.get(fullPath);
             break;
           case 'POST':
+            fullUrl = `${apiBaseUrl}${processedPath}`;
             response = await api.post(processedPath, input);
             break;
           case 'PUT':
+            fullUrl = `${apiBaseUrl}${processedPath}`;
             response = await api.put(processedPath, input);
             break;
           case 'DELETE':
+            fullUrl = `${apiBaseUrl}${processedPath}`;
             response = await api.delete(processedPath);
             break;
           case 'PATCH':
+            fullUrl = `${apiBaseUrl}${processedPath}`;
             response = await api.patch(processedPath, input);
             break;
           default:
             throw new Error(`Unsupported HTTP method: ${method}`);
         }
 
+        // Create context with URL debugging information
+        const ctx = { apiBaseUrl, input: args as TInput, url: fullUrl, method: spec.method };
         const mappedResponse = spec.mapResponse(response.data, ctx);
         const isError = spec.isError ? spec.isError(mappedResponse) : false;
         
@@ -123,8 +131,16 @@ export function createHttpTool<TInput = unknown, TOutput = unknown>(
         };
         
       } catch (error) {
+        // Create context for error handling - construct URL even if request failed
+        const errorProcessedPath = path.replace(/\{([^}]+)\}/g, (match, paramName) => {
+          const value = (args as Record<string, any>)[paramName];
+          return value !== undefined ? String(value) : `{${paramName}}`;
+        });
+        const errorFullUrl = `${apiBaseUrl}${errorProcessedPath}`;
+        const errorCtx = { apiBaseUrl, input: args as TInput, url: errorFullUrl, method: spec.method };
+        
         if (spec.mapError) {
-          const errorResponse = spec.mapError(error, ctx);
+          const errorResponse = spec.mapError(error, errorCtx);
           return {
             content: [
               {
