@@ -132,7 +132,7 @@ export function createHttpTool<TInput = unknown, TOutput = unknown>(
         
       } catch (error) {
         // Create context for error handling - construct URL even if request failed
-        const errorProcessedPath = path.replace(/\{([^}]+)\}/g, (match, paramName) => {
+        const errorProcessedPath = spec.path.replace(/\{([^}]+)\}/g, (match: string, paramName: string) => {
           const value = (args as Record<string, any>)[paramName];
           return value !== undefined ? String(value) : `{${paramName}}`;
         });
