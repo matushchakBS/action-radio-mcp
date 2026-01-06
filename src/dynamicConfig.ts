@@ -1,4 +1,8 @@
-import { apiPath, apiHost } from './config.js';
+import 'dotenv/config';
+
+// Constants for dynamic config
+const apiPath = process.env.EPISODE_MANAGER_API_PATH || '/api/episode-manager';
+const apiHost = process.env.EPISODE_MANAGER_API_HOST;
 
 // Store the detected host from the first incoming request
 let detectedHost: string | null = null;
