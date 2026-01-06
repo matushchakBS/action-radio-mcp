@@ -37,7 +37,7 @@ EXPOSE 1088
 
 # Set environment variables
 ENV NODE_ENV=production
-ENV EPISODE_MANAGER_API_URL=http://host.docker.internal:8000/api/episode-manager
+ENV EPISODE_MANAGER_API_URL=https://tube-api.4ide.com/api/episode-manager
 ENV MCP_PORT=1088
 
 # Health check
