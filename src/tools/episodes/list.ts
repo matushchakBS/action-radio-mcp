@@ -10,6 +10,7 @@ export interface ListEpisodesOutput {
   ok: boolean;
   data?: any;
   error?: string;
+  api_url?: string;
   timestamp: string;
 }
 
@@ -39,15 +40,17 @@ const spec = {
   method: 'GET' as const,
   path: '/episodes',
 
-  mapResponse: (data: any, ctx: { apiBaseUrl: string }): ListEpisodesOutput => ({
+  mapResponse: (data: any, ctx: { apiBaseUrl: string; url: string; method: string }): ListEpisodesOutput => ({
     ok: true,
     data: data,
+    api_url: ctx.url,
     timestamp: new Date().toISOString(),
   }),
 
-  mapError: (err: unknown, ctx: { apiBaseUrl: string }): ListEpisodesOutput => ({
+  mapError: (err: unknown, ctx: { apiBaseUrl: string; url: string; method: string }): ListEpisodesOutput => ({
     ok: false,
     error: err instanceof Error ? err.message : 'Unknown error',
+    api_url: ctx.url,
     timestamp: new Date().toISOString(),
   }),
 
