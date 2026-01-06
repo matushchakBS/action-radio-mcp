@@ -10,7 +10,7 @@
     "start:http": "node dist/server-http.js",
     "test": "npx tsx src/test/run-tests.ts",
     "test:health": "npx tsx src/test/health.test.ts",
-    "test:episodes": "npx tsx src/test/episodes.test.ts", 
+    "test:episodes": "npx tsx src/test/episodes.test.ts",
     "test:tracks": "npx tsx src/test/tracks.test.ts",
     "test:placements": "npx tsx src/test/placements.test.ts",
     "dev": "tsc --watch --preserveWatchOutput",

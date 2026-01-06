@@ -1,6 +1,6 @@
 import type { CallToolResult, ContentBlock, Tool } from '@modelcontextprotocol/sdk/types.js';
 import { api, serializeHttpError } from '../httpClient.js';
-import { apiBaseUrl } from '../config.js';
+import { getDynamicApiBaseUrl } from '../dynamicConfig.js';
 
 export type ToolExecutor = (args: unknown) => Promise<CallToolResult>;
 
@@ -45,7 +45,7 @@ export function createHttpTool<TInput = unknown, TOutput = unknown>(
     description: spec.description,
     inputSchema: spec.inputSchema,
     execute: async (args: unknown): Promise<CallToolResult> => {
-      const ctx = { apiBaseUrl, input: args as TInput };
+      const ctx = { apiBaseUrl: getDynamicApiBaseUrl(), input: args as TInput };
       
       try {
         let response;
@@ -67,7 +67,16 @@ export function createHttpTool<TInput = unknown, TOutput = unknown>(
         
         switch (method) {
           case 'GET':
-            response = await api.get(processedPath);
+            // For GET requests, handle query parameters
+            const queryParams = new URLSearchParams();
+            Object.keys(input).forEach(key => {
+              if (input[key] !== undefined && input[key] !== null) {
+                queryParams.append(key, String(input[key]));
+              }
+            });
+            const queryString = queryParams.toString();
+            const fullPath = queryString ? `${processedPath}?${queryString}` : processedPath;
+            response = await api.get(fullPath);
             break;
           case 'POST':
             response = await api.post(processedPath, input);

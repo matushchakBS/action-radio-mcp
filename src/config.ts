@@ -1,13 +1,16 @@
 import 'dotenv/config';
 
-const normalizeBaseUrl = (value?: string) => {
-  if (!value) return undefined;
-  return value.endsWith('/') ? value.slice(0, -1) : value;
-};
+// Get the API path from env
+export const apiPath = process.env.EPISODE_MANAGER_API_PATH || '/api/episode-manager';
 
-export const apiBaseUrl =
-  normalizeBaseUrl(process.env.EPISODE_MANAGER_API_URL) ??
-  'http://localhost:8000/api/episode-manager';
+// Get the host from env (optional)
+export const apiHost = process.env.EPISODE_MANAGER_API_HOST;
+
+// For relative API calls on the same domain, just use the path
+// This assumes your API is hosted on the same domain as the MCP server
+export const apiBaseUrl = apiHost 
+  ? `${apiHost.endsWith('/') ? apiHost.slice(0, -1) : apiHost}${apiPath.startsWith('/') ? apiPath : `/${apiPath}`}`
+  : apiPath; // Use just the path - axios will make requests to the same origin
 
 export const httpTimeoutMs = Number(process.env.MCP_HTTP_TIMEOUT_MS ?? '10000');
 

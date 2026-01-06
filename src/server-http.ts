@@ -10,6 +10,7 @@ import {
 import { tools, toolsByName } from './tools.js';
 // We will override these manually below to ensure connectivity
 import { serverPath, serverPort } from './config.js';
+import { captureHostFromRequest } from './dynamicConfig.js';
 
 const app = express();
 app.use(cors());
@@ -19,6 +20,8 @@ app.use(cors());
 // If n8n clicks fail and you see nothing here, it's a wrong Port or IP.
 app.use((req, res, next) => {
     console.log(`[Incoming Request] ${req.method} ${req.path}`);
+    // Capture the host from the first request
+    captureHostFromRequest(req);
     next();
 });
 
