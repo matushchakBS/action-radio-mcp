@@ -1,6 +1,6 @@
 import type { CallToolResult, ContentBlock, Tool } from '@modelcontextprotocol/sdk/types.js';
 import { api, serializeHttpError } from '../httpClient.js';
-import { getDynamicApiBaseUrl } from '../dynamicConfig.js';
+import { apiBaseUrl } from '../config.js';
 
 export type ToolExecutor = (args: unknown) => Promise<CallToolResult>;
 
@@ -45,7 +45,7 @@ export function createHttpTool<TInput = unknown, TOutput = unknown>(
     description: spec.description,
     inputSchema: spec.inputSchema,
     execute: async (args: unknown): Promise<CallToolResult> => {
-      const ctx = { apiBaseUrl: getDynamicApiBaseUrl(), input: args as TInput };
+      const ctx = { apiBaseUrl, input: args as TInput };
       
       try {
         let response;
